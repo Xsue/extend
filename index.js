@@ -9,22 +9,27 @@ function htmlWebpackPluginIntroduceExtend(options){
 
 htmlWebpackPluginIntroduceExtend.prototype.apply = function(compiler){
     var self = this;
-    var htmlPaths = self.options.htmlPaths;
-    var jsPaths = self.options.jsPaths;
+    var htmlPaths = self.options.htmlPaths || [];
+    var jsPaths = self.options.jsPaths || [];
     compiler.plugin('compilation', function(compilation,options){
         compilation.plugin('html-webpack-plugin-before-html-processing', function(htmlPluginData, callback) {  
 
             var bodyRegExp = /(<\/body\s*>)/i;
-            for (var j = htmlPaths.length - 1; j >=0; j--){    //引入公共html
+            if(htmlPaths&&htmlPaths.length>0){
+                for (var j = htmlPaths.length - 1; j >=0; j--){    //引入公共html,如引入html里包含图片路径并不会进行改变
 
-                htmlPluginData.html = htmlPluginData.html.replace(bodyRegExp,function(){
-                    return self.getHtml(htmlPaths[j]) + "</body>";
-                })
-                
+                    htmlPluginData.html = htmlPluginData.html.replace(bodyRegExp,function(){
+                        return self.getHtml(htmlPaths[j]) + "</body>";
+                    })
+                    
+                }
             }
-            for (var i = jsPaths.length - 1; i >= 0; i--) {    //引入外链
-                htmlPluginData.assets.js.unshift(jsPaths[i]);
+            if(jsPaths&&jsPaths.length>0){
+                for (var i = jsPaths.length - 1; i >= 0; i--) {    //引入外链
+                    htmlPluginData.assets.js.unshift(jsPaths[i]);
+                }
             }
+            
             callback(null, htmlPluginData);
         });
     })
